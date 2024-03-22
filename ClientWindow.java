@@ -3,6 +3,10 @@ package project2;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.security.SecureRandom;
 import java.util.TimerTask;
 import java.util.Timer;
@@ -17,6 +21,8 @@ public class ClientWindow implements ActionListener {
     private JLabel timer;
     private JLabel score;
     private TimerTask clock;
+    private String serverIP = "127.0.0.1";
+    private int serverPort = 12345;
 
     private JFrame window;
 
@@ -25,6 +31,19 @@ public class ClientWindow implements ActionListener {
     // write setters and getters as you need
 
     public ClientWindow() {
+        try (Socket socket = new Socket(serverIP, serverPort)) {
+            System.out.println("Connected to server.");
+            // Question and answer choices from server
+            InputStream inputStream = socket.getInputStream();
+
+            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+
+            writer.close();
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         JOptionPane.showMessageDialog(window, "This is a trivia game");
 
         window = new JFrame("Trivia");
@@ -35,7 +54,9 @@ public class ClientWindow implements ActionListener {
 
         options = new JRadioButton[4];
         optionGroup = new ButtonGroup();
-        for (int index = 0; index < options.length; index++) {
+        for (
+
+                int index = 0; index < options.length; index++) {
             options[index] = new JRadioButton("Option " + (index + 1)); // represents an option
             // if a radio button is clicked, the event would be thrown to this class to
             // handle
@@ -147,4 +168,7 @@ public class ClientWindow implements ActionListener {
         }
     }
 
+    public static void main(String[] args) {
+        ClientWindow window = new ClientWindow();
+    }
 }
