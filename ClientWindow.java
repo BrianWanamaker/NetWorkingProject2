@@ -1,4 +1,3 @@
-package project2;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
