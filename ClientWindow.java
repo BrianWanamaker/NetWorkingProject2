@@ -6,6 +6,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.security.SecureRandom;
 import java.util.TimerTask;
@@ -66,34 +69,32 @@ public class ClientWindow implements ActionListener {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-    
 
-        JOptionPane.showMessageDialog(window, "This is a trivia game");
+        // JOptionPane.showMessageDialog(window, "This is a trivia game");
 
         window = new JFrame("Trivia");
- // Fetch the first trivia question from the list
-TriviaQuestion firstQuestion = triviaQuestions.get(0);
+        // Fetch the first trivia question from the list
+        TriviaQuestion firstQuestion = triviaQuestions.get(0);
 
-// Set the question text from the first question
-question = new JLabel("Q1. " + firstQuestion.getQuestion());
-window.add(question);
-question.setBounds(10, 5, 350, 100);
+        // Set the question text from the first question
+        question = new JLabel("Q1. " + firstQuestion.getQuestion());
+        window.add(question);
+        question.setBounds(10, 5, 350, 100);
 
-options = new JRadioButton[4];
-optionGroup = new ButtonGroup();
+        options = new JRadioButton[4];
+        optionGroup = new ButtonGroup();
 
-List<String> questionOptions = firstQuestion.getOptions();
-for (int index = 0; index < options.length; index++) {
-    // Get option text from the question options list
-    String optionText = questionOptions.get(index);
-    
-    options[index] = new JRadioButton(optionText); // Use the option text
-    options[index].addActionListener(this);
-    options[index].setBounds(10, 110 + (index * 20), 350, 20);
-    window.add(options[index]);
-    optionGroup.add(options[index]);
-}
+        List<String> questionOptions = firstQuestion.getOptions();
+        for (int index = 0; index < options.length; index++) {
+            // Get option text from the question options list
+            String optionText = questionOptions.get(index);
 
+            options[index] = new JRadioButton(optionText); // Use the option text
+            options[index].addActionListener(this);
+            options[index].setBounds(10, 110 + (index * 20), 350, 20);
+            window.add(options[index]);
+            optionGroup.add(options[index]);
+        }
 
         timer = new JLabel("TIMER"); // represents the countdown shown on the window
         timer.setBounds(250, 250, 100, 20);
@@ -124,20 +125,20 @@ for (int index = 0; index < options.length; index++) {
         window.setResizable(false);
     }
 
-    
     public static List<TriviaQuestion> readTriviaQuestions(File file) throws FileNotFoundException {
         List<TriviaQuestion> triviaQuestions = new ArrayList<>();
-    
+
         try (Scanner reader = new Scanner(file)) {
             while (reader.hasNextLine()) {
                 String question = reader.nextLine().replaceFirst("^\\d+\\. ", "").trim(); // Remove initial number
                 List<String> options = new ArrayList<>();
-    
+
                 // Read options
                 for (int i = 0; i < 4 && reader.hasNextLine(); i++) {
-                    options.add(reader.nextLine().replaceFirst("^[A-D]\\) ", "").trim()); // Remove initial letter and space
+                    options.add(reader.nextLine().replaceFirst("^[A-D]\\) ", "").trim()); // Remove initial letter and
+                                                                                          // space
                 }
-    
+
                 // Read correct answer
                 if (reader.hasNextLine()) {
                     String correctAnswerLine = reader.nextLine().trim();
@@ -153,31 +154,31 @@ for (int index = 0; index < options.length; index++) {
                     System.err.println("Unexpected end of file while reading questions.");
                     break; // Exit loop
                 }
-                
+
                 // Skip empty line if present
                 if (reader.hasNextLine()) {
                     reader.nextLine();
                 }
             }
         }
-    
+
         return triviaQuestions;
     }
-    
+
     private void displayQuestion() {
         if (currentQuestionIndex < triviaQuestions.size()) {
             TriviaQuestion currentQuestion = triviaQuestions.get(currentQuestionIndex);
             // Set the question text
             question.setText("Q" + (currentQuestionIndex + 1) + ". " + currentQuestion.getQuestion());
-            
+
             List<String> questionOptions = currentQuestion.getOptions();
             for (int index = 0; index < options.length; index++) {
                 // Get option text from the question options list
                 String optionText = questionOptions.get(index);
-    
+
                 // Update existing radio buttons with new option text
                 options[index].setText(optionText);
-                
+
                 // Enable radio buttons if disabled
                 options[index].setEnabled(true);
             }
@@ -204,11 +205,21 @@ for (int index = 0; index < options.length; index++) {
                 break;
             case "Option 4": // Your code here
                 break;
-            case "Poll": // Your code here
+            case "Poll":
+                try {
+                    byte[] buf = "poll".getBytes();
+                    InetAddress address = InetAddress.getByName(serverIP);
+                    DatagramPacket packet = new DatagramPacket(buf, buf.length, address, serverPort);
+                    DatagramSocket socket = new DatagramSocket();
+                    socket.send(packet);
+                    socket.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
                 break;
             case "Submit": // Your code here
-            currentQuestionIndex++;
-            displayQuestion();
+                currentQuestionIndex++;
+                displayQuestion();
                 break;
             default:
                 // System.out.println("Incorrect Option");
