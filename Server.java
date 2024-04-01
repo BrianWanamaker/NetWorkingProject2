@@ -13,6 +13,7 @@ public class Server {
 
     public static void main(String[] args) {
         try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
+
             System.out.println("Server started. Waiting for clients to connect...");
             List<Socket> clientSockets = new ArrayList<>();
             UDPThread udpThread = new UDPThread();
