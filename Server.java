@@ -12,9 +12,9 @@ public class Server {
     private int currentQuestionIndex = 0;
 
     public static void main(String[] args) {
-        triviaQuestions = new ArrayList();
+        triviaQuestions = new ArrayList<>();
         try {
-            wordCount("qAndA.txt");
+            readInFile("qAndA.txt");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -84,32 +84,24 @@ public class Server {
         }
     }
 
-    public static void wordCount(String path) throws FileNotFoundException {
-        // File object
+    // reads in file and adds String question, List<String> options, String
+    // correctAnswer to arraylist of trivaQuestions
+    public static void readInFile(String path) throws FileNotFoundException {
         File file = new File(path);
-
-        // file existence check
         if (!file.exists())
             throw new FileNotFoundException();
 
         Scanner reader = new Scanner(file);
-
-        // 1. read file line by line, count # of words, accumulate result
-        // 2. this approach is faster for large file, limits stack overflow error
         while (reader.hasNextLine()) {
-            // System.out.println(reader.nextLine());
             String str = reader.nextLine();
             if (!str.isEmpty()) {
                 String question = str;
-                System.out.println(question);
                 List<String> options = new ArrayList<>();
                 options.add(reader.nextLine());
-                System.out.println(options.get(0));
                 options.add(reader.nextLine());
                 options.add(reader.nextLine());
                 options.add(reader.nextLine());
                 String correctAnswer = reader.nextLine();
-                System.out.println(correctAnswer);
                 triviaQuestions.add(new TriviaQuestion(question, options, correctAnswer));
             }
 

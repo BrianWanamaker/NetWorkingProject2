@@ -131,22 +131,22 @@ public class ClientWindow implements ActionListener {
                 System.out.println("Incorrect Option");
         }
 
-        // test code below to demo enable/disable components
-        // DELETE THE CODE BELOW FROM HERE***
-        if (poll.isEnabled()) {
-            poll.setEnabled(false);
-            submit.setEnabled(true);
-        } else {
-            poll.setEnabled(true);
-            submit.setEnabled(false);
-        }
+        // // test code below to demo enable/disable components
+        // // DELETE THE CODE BELOW FROM HERE***
+        // if (poll.isEnabled()) {
+        // poll.setEnabled(false);
+        // submit.setEnabled(true);
+        // } else {
+        // poll.setEnabled(true);
+        // submit.setEnabled(false);
+        // }
 
-        question.setText("Q2. This is another test problem " + random.nextInt());
+        // question.setText("Q2. This is another test problem " + random.nextInt());
 
-        // you can also enable disable radio buttons
-        options[random.nextInt(4)].setEnabled(false);
-        options[random.nextInt(4)].setEnabled(true);
-        // TILL HERE ***
+        // // you can also enable disable radio buttons
+        // options[random.nextInt(4)].setEnabled(false);
+        // options[random.nextInt(4)].setEnabled(true);
+        // // TILL HERE ***
 
     }
 
