@@ -2,16 +2,23 @@ import java.io.*;
 import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Server {
     private static final int portNumber = 12345;
     private static ConcurrentLinkedQueue<String> messageQueue = new ConcurrentLinkedQueue<>();
+    private static List<TriviaQuestion> triviaQuestions;
+    private int currentQuestionIndex = 0;
 
     public static void main(String[] args) {
+        triviaQuestions = new ArrayList();
+        try {
+            wordCount("qAndA.txt");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
         try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
 
             System.out.println("Server started. Waiting for clients to connect...");
@@ -76,4 +83,38 @@ public class Server {
             socket.close();
         }
     }
+
+    public static void wordCount(String path) throws FileNotFoundException {
+        // File object
+        File file = new File(path);
+
+        // file existence check
+        if (!file.exists())
+            throw new FileNotFoundException();
+
+        Scanner reader = new Scanner(file);
+
+        // 1. read file line by line, count # of words, accumulate result
+        // 2. this approach is faster for large file, limits stack overflow error
+        while (reader.hasNextLine()) {
+            // System.out.println(reader.nextLine());
+            String str = reader.nextLine();
+            if (!str.isEmpty()) {
+                String question = str;
+                System.out.println(question);
+                List<String> options = new ArrayList<>();
+                options.add(reader.nextLine());
+                System.out.println(options.get(0));
+                options.add(reader.nextLine());
+                options.add(reader.nextLine());
+                options.add(reader.nextLine());
+                String correctAnswer = reader.nextLine();
+                System.out.println(correctAnswer);
+                triviaQuestions.add(new TriviaQuestion(question, options, correctAnswer));
+            }
+
+        }
+        reader.close();
+    }
+
 }
