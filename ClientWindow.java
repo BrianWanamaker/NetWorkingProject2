@@ -115,7 +115,7 @@ public class ClientWindow implements ActionListener {
                 break;
             case "Poll":
                 try {
-                    byte[] buf = "poll".getBytes();
+                    byte[] buf = "buzz".getBytes();
                     InetAddress address = InetAddress.getByName(serverIP);
                     DatagramPacket packet = new DatagramPacket(buf, buf.length, address, serverPort);
                     DatagramSocket socket = new DatagramSocket();
