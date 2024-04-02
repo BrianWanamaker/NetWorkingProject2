@@ -28,6 +28,6 @@ public class TriviaQuestion {
     }
 
     public String toString() {
-        return question + correctAnswer;
+        return question + options.toString();
     }
 }

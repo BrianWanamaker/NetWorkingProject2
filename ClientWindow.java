@@ -1,8 +1,11 @@
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -18,7 +21,7 @@ public class ClientWindow implements ActionListener {
     private JButton submit;
     private JRadioButton options[];
     private ButtonGroup optionGroup;
-    private JLabel question;
+    private static JLabel question;
     private JLabel timer;
     private JLabel score;
     private TimerTask clock;
@@ -32,18 +35,6 @@ public class ClientWindow implements ActionListener {
     // write setters and getters as you need
 
     public ClientWindow() {
-        try (Socket socket = new Socket(serverIP, serverPort)) {
-            System.out.println("Connected to server.");
-            // Question and answer choices from server
-            InputStream inputStream = socket.getInputStream();
-
-            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-
-            writer.close();
-            socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         // JOptionPane.showMessageDialog(window, "This is a trivia game");
 
@@ -94,6 +85,14 @@ public class ClientWindow implements ActionListener {
         window.setVisible(true);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setResizable(false);
+
+        try (Socket socket = new Socket(serverIP, serverPort)) {
+            System.out.println("Connected to server.");
+            readFromSocket(socket);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     // this method is called when you check/uncheck any radio button
@@ -131,23 +130,6 @@ public class ClientWindow implements ActionListener {
                 System.out.println("Incorrect Option");
         }
 
-        // // test code below to demo enable/disable components
-        // // DELETE THE CODE BELOW FROM HERE***
-        // if (poll.isEnabled()) {
-        // poll.setEnabled(false);
-        // submit.setEnabled(true);
-        // } else {
-        // poll.setEnabled(true);
-        // submit.setEnabled(false);
-        // }
-
-        // question.setText("Q2. This is another test problem " + random.nextInt());
-
-        // // you can also enable disable radio buttons
-        // options[random.nextInt(4)].setEnabled(false);
-        // options[random.nextInt(4)].setEnabled(true);
-        // // TILL HERE ***
-
     }
 
     // this class is responsible for running the timer on the window
@@ -181,5 +163,31 @@ public class ClientWindow implements ActionListener {
 
     public static void main(String[] args) {
         ClientWindow window = new ClientWindow();
+    }
+
+    private void readFromSocket(Socket socket) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        String str;
+        while ((str = reader.readLine()) != null) {
+            String[] parts = str.split("\\[");
+            String questionPart = parts[0];
+            String choices = str.substring(questionPart.length() + 1, str.length() - 1);
+
+            String questionNumber = questionPart.split("\\.")[0].trim();
+            String questionText = questionPart.substring(questionNumber.length() + 1).trim();
+
+            updateOptions(questionNumber, questionText, choices);
+        }
+
+        reader.close();
+    }
+
+    public void updateOptions(String questionNumber, String questionText, String optionsPart) {
+        question.setText(questionNumber + ". " + questionText);
+
+        String[] optionsArray = optionsPart.split(", ");
+        for (int i = 0; i < this.options.length && i < optionsArray.length; i++) {
+            this.options[i].setText(optionsArray[i].trim());
+        }
     }
 }

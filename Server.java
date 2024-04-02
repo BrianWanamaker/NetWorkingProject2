@@ -9,7 +9,7 @@ public class Server {
     private static final int portNumber = 12345;
     private static ConcurrentLinkedQueue<String> messageQueue = new ConcurrentLinkedQueue<>();
     private static List<TriviaQuestion> triviaQuestions;
-    private int currentQuestionIndex = 0;
+    private static int currentQuestionIndex = 0;
 
     public static void main(String[] args) {
         triviaQuestions = new ArrayList<>();
@@ -18,6 +18,7 @@ public class Server {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        System.out.println(triviaQuestions.get(currentQuestionIndex).toString());
 
         try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
 
@@ -33,12 +34,8 @@ public class Server {
 
                 new Thread(() -> {
                     try {
-                        // reading message from client
-                        BufferedReader reader = new BufferedReader(
-                                new InputStreamReader(clientSocket.getInputStream()));
+                        sendCurrentQuestionToClient(clientSocket);
 
-                        String str = reader.readLine();
-                        System.out.println("str from client: " + str);
                     } catch (IOException e) {
                         System.out.println("An error occurred with a client connection.");
                         e.printStackTrace();
@@ -107,6 +104,16 @@ public class Server {
 
         }
         reader.close();
+    }
+
+    private static void sendCurrentQuestionToClient(Socket clientSocket) throws IOException {
+        DataOutputStream dos = new DataOutputStream(clientSocket.getOutputStream());
+        String str = triviaQuestions.get(currentQuestionIndex).toString();
+        byte[] b = str.getBytes();
+
+        dos.write(b, 0, str.length());
+        dos.flush();
+        dos.close();
     }
 
 }
