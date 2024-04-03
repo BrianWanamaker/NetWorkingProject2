@@ -15,6 +15,8 @@ public class ClientHandler {
         this.socket = socket;
         this.dos = new DataOutputStream(socket.getOutputStream());
         this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        score = 0;
+        send("score " + score);
     }
 
     public void setCorrectAnswer(String correctAnswer) {

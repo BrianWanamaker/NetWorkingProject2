@@ -55,7 +55,6 @@ public class ClientWindow implements ActionListener {
             options[index].setEnabled(false);
             window.add(options[index]);
             optionGroup.add(options[index]);
-
         }
 
         timer = new JLabel("TIMER"); // represents the countdown shown on the window
@@ -80,7 +79,7 @@ public class ClientWindow implements ActionListener {
         submit.setEnabled(canAnswer);
         window.add(submit);
 
-        window.setSize(400, 400);
+        window.setSize(500, 400);
         window.setBounds(50, 50, 400, 400);
         window.setLayout(null);
         window.setVisible(true);
@@ -102,19 +101,8 @@ public class ClientWindow implements ActionListener {
     // this method is called when you press either of the buttons- submit/poll
     @Override
     public void actionPerformed(ActionEvent e) {
-        // System.out.println("You clicked " + e.getActionCommand());
-
-        // input refers to the radio button you selected or button you clicked
         String input = e.getActionCommand();
         switch (input) {
-            case "Option 1": // Your code here
-                break;
-            case "Option 2": // Your code here
-                break;
-            case "Option 3": // Your code here
-                break;
-            case "Option 4": // Your code here
-                break;
             case "Poll":
                 try {
                     byte[] buf = "buzz".getBytes();
@@ -209,9 +197,13 @@ public class ClientWindow implements ActionListener {
                 }
                 optionGroup.clearSelection();
                 score.setText("SCORE: " + scoreValue);
-            } else if (str.startsWith("end")) {
+            } else if (str.startsWith("score")) {
+                String scoreValue = str.substring("score ".length()).trim();
+                score.setText("SCORE: " + scoreValue);
+            } else if (str.startsWith("END")) {
+                question.setForeground(Color.red);
+                question.setText("Thank You For Playing! You're Final Score is Below!");
                 poll.setEnabled(false);
-                System.out.println("End of game.");
             }
         }
         reader.close();
