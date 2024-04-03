@@ -21,6 +21,7 @@ public class ClientWindow implements ActionListener {
     private JRadioButton options[];
     private ButtonGroup optionGroup;
     private static JLabel question;
+    private static JLabel msg;
     private JLabel timer;
     private JLabel score;
     private TimerTask clock;
@@ -36,8 +37,11 @@ public class ClientWindow implements ActionListener {
 
         window = new JFrame("Trivia");
 
-        question = new JLabel("Q1. This is a sample question"); // represents the question
+        question = new JLabel("Q1. This is a sample question");
+        msg = new JLabel("Connected to server.");
         window.add(question);
+        window.add(msg);
+        msg.setBounds(400, 210, 350, 100);
         question.setBounds(10, 5, 350, 100);
         ;
 
@@ -79,8 +83,8 @@ public class ClientWindow implements ActionListener {
         submit.setEnabled(canAnswer);
         window.add(submit);
 
-        window.setSize(500, 400);
-        window.setBounds(50, 50, 400, 400);
+        window.setSize(700, 400);
+        window.setBounds(50, 50, 700, 400);
         window.setLayout(null);
         window.setVisible(true);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -89,7 +93,7 @@ public class ClientWindow implements ActionListener {
         try {
             socket = new Socket(serverIP, serverPort);
             System.out.println("Connected to server.");
-            window.setTitle("Connected to Trivia Server");
+            window.setTitle("Connected to " + serverIP);
             readFromSocket(socket);
 
         } catch (IOException e) {
@@ -113,6 +117,7 @@ public class ClientWindow implements ActionListener {
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
+                msg.setText("");
                 break;
             case "Submit":
                 String selectedAnswer = null;
@@ -177,8 +182,10 @@ public class ClientWindow implements ActionListener {
                 for (JRadioButton option : options) {
                     option.setEnabled(canAnswer);
                 }
+                msg.setText("You buzzed first!");
             } else if (str.trim().equals("NAK")) {
                 System.out.println("NAK");
+                msg.setText("Too Slow!");
             } else if (str.startsWith("correct")) {
                 String scoreValue = str.substring("correct ".length()).trim();
                 canAnswer = false;
@@ -187,6 +194,7 @@ public class ClientWindow implements ActionListener {
                     option.setEnabled(canAnswer);
                 }
                 optionGroup.clearSelection();
+                msg.setText("Good Job! +10");
                 score.setText("SCORE: " + scoreValue);
             } else if (str.startsWith("wrong")) {
                 String scoreValue = str.substring("wrong ".length()).trim();
@@ -196,6 +204,7 @@ public class ClientWindow implements ActionListener {
                     option.setEnabled(canAnswer);
                 }
                 optionGroup.clearSelection();
+                msg.setText("Maybe next time! -10");
                 score.setText("SCORE: " + scoreValue);
             } else if (str.startsWith("score")) {
                 String scoreValue = str.substring("score ".length()).trim();

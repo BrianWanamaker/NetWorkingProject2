@@ -103,6 +103,7 @@ public class Server {
                                 System.out.println("Sending NAK to " + address.getHostAddress());
                                 try {
                                     matchingHandler.send("NAK");
+                                    System.out.println("Sent NAK to " + address.getHostAddress());
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
