@@ -235,5 +235,4 @@ public class ClientWindow implements ActionListener {
             e.printStackTrace();
         }
     }
-
 }
