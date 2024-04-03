@@ -1,7 +1,5 @@
 import java.io.*;
 import java.net.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -10,6 +8,8 @@ public class Server {
     private static ConcurrentLinkedQueue<String> messageQueue = new ConcurrentLinkedQueue<>();
     private static List<TriviaQuestion> triviaQuestions;
     private static int currentQuestionIndex = 0;
+    private static boolean receivingPoll = true;
+    private static List<ClientHandler> clientHandlers = new ArrayList<>();
 
     public static void main(String[] args) {
         triviaQuestions = new ArrayList<>();
@@ -18,24 +18,22 @@ public class Server {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        System.out.println(triviaQuestions.get(currentQuestionIndex).toString());
 
         try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
 
             System.out.println("Server started. Waiting for clients to connect...");
-            List<Socket> clientSockets = new ArrayList<>();
             UDPThread udpThread = new UDPThread();
             udpThread.start();
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                clientSockets.add(clientSocket);
+                ClientHandler clientHandler = new ClientHandler(clientSocket);
+                clientHandlers.add(clientHandler);
                 System.out.println("Client connected: " + clientSocket.getRemoteSocketAddress().toString());
 
                 new Thread(() -> {
                     try {
-                        sendCurrentQuestionToClient(clientSocket);
-
+                        sendCurrentQuestionToClients(clientHandler);
                     } catch (IOException e) {
                         System.out.println("An error occurred with a client connection.");
                         e.printStackTrace();
@@ -70,8 +68,30 @@ public class Server {
                     int port = packet.getPort();
                     System.out.println(
                             "Received: " + received + " from: " + address.getHostAddress() + ":" + port);
+                    if (receivingPoll) {
+                        receivingPoll = false;
+                        if (messageQueue.size() == 0) {
+                            ClientHandler matchingHandler = null;
+                            for (ClientHandler handler : clientHandlers) {
+                                if (handler.getSocket().getInetAddress().equals(address)) {
+                                    matchingHandler = handler;
+                                    break;
+                                }
+                            }
 
-                    messageQueue.add(received);
+                            if (matchingHandler != null) {
+                                System.out.println("Sending ACK to " + address.getHostAddress());
+                                try {
+                                    sendACK(matchingHandler); // Use the matching handler to send ACK
+                                } catch (IOException e) {
+                                    System.out.println("Failed to send ACK to " + address.getHostAddress());
+                                    e.printStackTrace();
+                                }
+                            } else {
+                                System.out.println("No matching TCP client found for " + address.getHostAddress());
+                            }
+                        }
+                    }
                 } catch (IOException e) {
                     System.out.println("IOException in UDPThread: " + e.getMessage());
                     e.printStackTrace();
@@ -106,14 +126,13 @@ public class Server {
         reader.close();
     }
 
-    private static void sendCurrentQuestionToClient(Socket clientSocket) throws IOException {
-        DataOutputStream dos = new DataOutputStream(clientSocket.getOutputStream());
-        String str = triviaQuestions.get(currentQuestionIndex).toString();
-        byte[] b = str.getBytes();
+    private static void sendCurrentQuestionToClients(ClientHandler clientHandler) throws IOException {
+        String questionData = "Q" + triviaQuestions.get(currentQuestionIndex).toString();
+        clientHandler.send(questionData);
+    }
 
-        dos.write(b, 0, str.length());
-        dos.flush();
-        dos.close();
+    private static void sendACK(ClientHandler clientHandler) throws IOException {
+        clientHandler.send("ACK");
     }
 
 }

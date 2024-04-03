@@ -27,18 +27,15 @@ public class ClientWindow implements ActionListener {
     private TimerTask clock;
     private String serverIP = "127.0.0.1";
     private int serverPort = 12345;
-
+    private static boolean canAnswer = false;
     private JFrame window;
-
-    private static SecureRandom random = new SecureRandom();
 
     // write setters and getters as you need
 
     public ClientWindow() {
 
-        // JOptionPane.showMessageDialog(window, "This is a trivia game");
-
         window = new JFrame("Trivia");
+
         question = new JLabel("Q1. This is a sample question"); // represents the question
         window.add(question);
         question.setBounds(10, 5, 350, 100);
@@ -49,7 +46,8 @@ public class ClientWindow implements ActionListener {
         for (
 
                 int index = 0; index < options.length; index++) {
-            options[index] = new JRadioButton("Option " + (index + 1)); // represents an option
+            options[index] = new JRadioButton("Option " + (index + 1)); // represents an
+            // option
             // if a radio button is clicked, the event would be thrown to this class to
             // handle
             options[index].addActionListener(this);
@@ -77,6 +75,7 @@ public class ClientWindow implements ActionListener {
         submit = new JButton("Submit"); // button to submit their answer
         submit.setBounds(200, 300, 100, 20);
         submit.addActionListener(this); // calls actionPerformed of this class
+        submit.setEnabled(canAnswer);
         window.add(submit);
 
         window.setSize(400, 400);
@@ -88,6 +87,7 @@ public class ClientWindow implements ActionListener {
 
         try (Socket socket = new Socket(serverIP, serverPort)) {
             System.out.println("Connected to server.");
+            window.setTitle("my title");
             readFromSocket(socket);
 
         } catch (IOException e) {
@@ -99,7 +99,7 @@ public class ClientWindow implements ActionListener {
     // this method is called when you press either of the buttons- submit/poll
     @Override
     public void actionPerformed(ActionEvent e) {
-        System.out.println("You clicked " + e.getActionCommand());
+        // System.out.println("You clicked " + e.getActionCommand());
 
         // input refers to the radio button you selected or button you clicked
         String input = e.getActionCommand();
@@ -169,17 +169,24 @@ public class ClientWindow implements ActionListener {
         BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         String str;
         while ((str = reader.readLine()) != null) {
-            String[] parts = str.split("\\[");
-            String questionPart = parts[0];
-            String choices = str.substring(questionPart.length() + 1, str.length() - 1);
-
-            String questionNumber = questionPart.split("\\.")[0].trim();
-            String questionText = questionPart.substring(questionNumber.length() + 1).trim();
-
-            updateOptions(questionNumber, questionText, choices);
+            if (str.startsWith("Q")) {
+                processQuestion(str.substring(1));
+            } else if (str.trim().equals("ACK")) {
+                System.out.println("ACK");
+                canAnswer = true;
+                submit.setEnabled(canAnswer);
+            }
         }
-
         reader.close();
+    }
+
+    private void processQuestion(String questionData) {
+        String[] parts = questionData.split("\\[");
+        String questionPart = parts[0];
+        String choices = questionData.substring(questionPart.length() + 1, questionData.length() - 1);
+        String questionNumber = questionPart.split("\\.")[0].trim();
+        String questionText = questionPart.substring(questionNumber.length() + 1).trim();
+        updateOptions(questionNumber, questionText, choices);
     }
 
     public void updateOptions(String questionNumber, String questionText, String optionsPart) {
