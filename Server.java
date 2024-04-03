@@ -83,6 +83,7 @@ public class Server {
                                 System.out.println("Sending ACK to " + address.getHostAddress());
                                 try {
                                     matchingHandler.send("ACK");
+                                    startClientTimer("10", matchingHandler);
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
@@ -143,6 +144,7 @@ public class Server {
     }
 
     private static void sendCurrentQuestionToClients(ClientHandler clientHandler) throws IOException {
+        startAllClientsTimers("15");
         if (currentQuestionIndex < triviaQuestions.size()) {
             TriviaQuestion currentQuestion = triviaQuestions.get(currentQuestionIndex);
             String questionData = "Q" + currentQuestion.toString();
@@ -166,6 +168,17 @@ public class Server {
 
     public static synchronized void removeClient(ClientHandler clientHandler) {
         clientHandlers.remove(clientHandler);
+    }
+
+    public static void startAllClientsTimers(String time) throws IOException {
+
+        for (ClientHandler clientHandler : clientHandlers) {
+            clientHandler.send("Time " + time);
+        }
+    }
+
+    public static void startClientTimer(String time, ClientHandler client) throws IOException {
+        client.send("Time " + time);
     }
 
 }

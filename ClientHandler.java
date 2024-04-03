@@ -37,7 +37,14 @@ public class ClientHandler {
             String message;
             while ((message = reader.readLine()) != null) {
                 System.out.println("Received from client: " + message);
-                checkAnswer(message);
+                if (message.startsWith("Score")) {
+                    score -= Integer.parseInt(message.substring("Score ".length()).trim());
+                    send("score " + score);
+                    System.out.println("Client did not answer in time");
+                    Server.moveAllToNextQuestion();
+                } else {
+                    checkAnswer(message);
+                }
             }
         } catch (IOException e) {
             System.out.println("Error listening for messages from the client.");
@@ -65,12 +72,7 @@ public class ClientHandler {
             }
         } else {
             System.out.println("Client answered incorrectly.");
-            if (score - 10 < 0) {
-                score = 0;
-            } else {
-                score -= 10;
-            }
-
+            score -= 10;
             try {
                 send("wrong " + score);
             } catch (IOException e) {

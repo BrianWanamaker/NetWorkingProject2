@@ -147,6 +147,15 @@ public class ClientWindow implements ActionListener {
                 timer.setText("Timer expired");
                 window.repaint();
                 this.cancel();
+                submit.setEnabled(false);
+                for (JRadioButton option : options) {
+                    option.setEnabled(false);
+                }
+                optionGroup.clearSelection();
+                if (canAnswer) {
+                    sendAnswer("Score 20");
+                }
+                canAnswer = false;
                 return;
             }
 
@@ -171,8 +180,10 @@ public class ClientWindow implements ActionListener {
         while ((str = reader.readLine()) != null) {
             if (str.startsWith("Q")) {
                 processQuestion(str.substring(1));
+                poll.setEnabled(true);
             } else if (str.trim().equals("ACK")) {
                 System.out.println("ACK");
+
                 canAnswer = true;
                 submit.setEnabled(canAnswer);
                 for (JRadioButton option : options) {
@@ -210,6 +221,9 @@ public class ClientWindow implements ActionListener {
                 question.setText("Thank you for playing! You're final score is below!");
                 poll.setEnabled(false);
                 msg.setText("");
+            } else if (str.startsWith("Time")) {
+                int time = Integer.parseInt(str.substring("Time ".length()).trim());
+                resetTimer(time);
             }
         }
         reader.close();
@@ -240,5 +254,14 @@ public class ClientWindow implements ActionListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void resetTimer(int newDuration) {
+        if (clock != null) {
+            clock.cancel();
+        }
+        clock = new TimerCode(newDuration);
+        Timer t = new Timer();
+        t.scheduleAtFixedRate(clock, 0, 1000);
     }
 }
