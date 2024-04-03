@@ -42,12 +42,13 @@ public class ClientHandler {
                     send("score " + score);
                     System.out.println("Client did not answer in time");
                     Server.moveAllToNextQuestion();
+                } else if (message.startsWith("Expired")) {
+                    Server.ClientOutOfTime(this);
                 } else {
                     checkAnswer(message);
                 }
             }
         } catch (IOException e) {
-            System.out.println("Error listening for messages from the client.");
             try {
                 System.out.println("Client disconnected: " + socket.getRemoteSocketAddress());
                 Server.removeClient(this);

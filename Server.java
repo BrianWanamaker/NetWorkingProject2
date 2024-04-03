@@ -10,6 +10,7 @@ public class Server {
     private static int currentQuestionIndex = 0;
     private static boolean receivingPoll = true;
     private static List<ClientHandler> clientHandlers = new ArrayList<>();
+    public static int numClientsOutOfTime = 0;
 
     public static void main(String[] args) {
         triviaQuestions = new ArrayList<>();
@@ -179,6 +180,20 @@ public class Server {
 
     public static void startClientTimer(String time, ClientHandler client) throws IOException {
         client.send("Time " + time);
+    }
+
+    public static synchronized void ClientOutOfTime(ClientHandler clientHandler) {
+        numClientsOutOfTime++;
+        System.out.println("All Clients out of time");
+        if (numClientsOutOfTime >= clientHandlers.size()) {
+            numClientsOutOfTime = 0;
+            try {
+                moveAllToNextQuestion();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 
 }

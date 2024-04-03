@@ -154,6 +154,10 @@ public class ClientWindow implements ActionListener {
                 optionGroup.clearSelection();
                 if (canAnswer) {
                     sendAnswer("Score 20");
+                    msg.setText("You did not answer in time! -20");
+                } else {
+                    sendAnswer("Expired");
+                    msg.setText("Out of time!");
                 }
                 canAnswer = false;
                 return;
