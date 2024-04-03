@@ -40,7 +40,7 @@ public class ClientWindow implements ActionListener {
         window.add(question);
         window.add(msg);
         msg.setBounds(400, 210, 350, 100);
-        question.setBounds(10, 5, 350, 100);
+        question.setBounds(10, 5, 450, 100);
 
         options = new JRadioButton[4];
         optionGroup = new ButtonGroup();
@@ -103,15 +103,18 @@ public class ClientWindow implements ActionListener {
         switch (input) {
             case "Poll":
                 try {
-                    byte[] buf = "buzz".getBytes();
-                    InetAddress address = InetAddress.getByName(serverIP);
-                    DatagramPacket packet = new DatagramPacket(buf, buf.length, address, serverPort);
-                    DatagramSocket socket = new DatagramSocket();
-                    socket.send(packet);
+                    if (!canAnswer) {
+                        byte[] buf = "buzz".getBytes();
+                        InetAddress address = InetAddress.getByName(serverIP);
+                        DatagramPacket packet = new DatagramPacket(buf, buf.length, address, serverPort);
+                        DatagramSocket socket = new DatagramSocket();
+                        socket.send(packet);
+                        // msg.setText("");
+                    }
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
-                msg.setText("");
+
                 break;
             case "Submit":
                 String selectedAnswer = null;
@@ -206,6 +209,7 @@ public class ClientWindow implements ActionListener {
                 question.setForeground(Color.red);
                 question.setText("Thank you for playing! You're final score is below!");
                 poll.setEnabled(false);
+                msg.setText("");
             }
         }
         reader.close();
