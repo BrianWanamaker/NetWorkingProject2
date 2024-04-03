@@ -122,7 +122,6 @@ public class ClientWindow implements ActionListener {
                     DatagramPacket packet = new DatagramPacket(buf, buf.length, address, serverPort);
                     DatagramSocket socket = new DatagramSocket();
                     socket.send(packet);
-                    socket.close();
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
@@ -190,12 +189,29 @@ public class ClientWindow implements ActionListener {
                 for (JRadioButton option : options) {
                     option.setEnabled(canAnswer);
                 }
+            } else if (str.trim().equals("NAK")) {
+                System.out.println("NAK");
             } else if (str.startsWith("correct")) {
                 String scoreValue = str.substring("correct ".length()).trim();
+                canAnswer = false;
+                submit.setEnabled(canAnswer);
+                for (JRadioButton option : options) {
+                    option.setEnabled(canAnswer);
+                }
+                optionGroup.clearSelection();
                 score.setText("SCORE: " + scoreValue);
             } else if (str.startsWith("wrong")) {
                 String scoreValue = str.substring("wrong ".length()).trim();
+                canAnswer = false;
+                submit.setEnabled(canAnswer);
+                for (JRadioButton option : options) {
+                    option.setEnabled(canAnswer);
+                }
+                optionGroup.clearSelection();
                 score.setText("SCORE: " + scoreValue);
+            } else if (str.startsWith("end")) {
+                poll.setEnabled(false);
+                System.out.println("End of game.");
             }
         }
         reader.close();

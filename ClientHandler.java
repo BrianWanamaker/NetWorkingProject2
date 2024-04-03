@@ -69,6 +69,11 @@ public class ClientHandler {
                 e.printStackTrace();
             }
         }
+        try {
+            Server.moveAllToNextQuestion();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void close() throws IOException {

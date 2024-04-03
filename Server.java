@@ -90,6 +90,25 @@ public class Server {
                             } else {
                                 System.out.println("No matching TCP client found for " + address.getHostAddress());
                             }
+                        } else {
+                            ClientHandler matchingHandler = null;
+                            for (ClientHandler handler : clientHandlers) {
+                                if (handler.getSocket().getInetAddress().equals(address)) {
+                                    matchingHandler = handler;
+                                    break;
+                                }
+                            }
+
+                            if (matchingHandler != null) {
+                                System.out.println("Sending NAK to " + address.getHostAddress());
+                                try {
+                                    matchingHandler.send("NAK");
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            } else {
+                                System.out.println("No matching TCP client found for " + address.getHostAddress());
+                            }
                         }
                     }
                 } catch (IOException e) {
@@ -126,11 +145,26 @@ public class Server {
     }
 
     private static void sendCurrentQuestionToClients(ClientHandler clientHandler) throws IOException {
+        if (currentQuestionIndex < triviaQuestions.size()) {
+            TriviaQuestion currentQuestion = triviaQuestions.get(currentQuestionIndex);
+            String questionData = "Q" + currentQuestion.toString();
+            clientHandler.send(questionData);
+            clientHandler.setCorrectAnswer(currentQuestion.getCorrectAnswer());
+        } else {
+            System.out.println("end of game");
+            clientHandler.send("END");
+        }
+
+    }
+
+    public static void moveAllToNextQuestion() throws IOException {
+        receivingPoll = true;
         messageQueue.clear();
-        TriviaQuestion currentQuestion = triviaQuestions.get(currentQuestionIndex);
-        String questionData = "Q" + currentQuestion.toString();
-        clientHandler.send(questionData);
-        clientHandler.setCorrectAnswer(currentQuestion.getCorrectAnswer());
+        currentQuestionIndex++;
+
+        for (ClientHandler clientHandler : clientHandlers) {
+            sendCurrentQuestionToClients(clientHandler);
+        }
     }
 
 }
