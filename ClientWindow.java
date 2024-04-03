@@ -31,8 +31,6 @@ public class ClientWindow implements ActionListener {
     private JFrame window;
     private Socket socket;
 
-    // write setters and getters as you need
-
     public ClientWindow() {
 
         window = new JFrame("Trivia");
@@ -43,17 +41,13 @@ public class ClientWindow implements ActionListener {
         window.add(msg);
         msg.setBounds(400, 210, 350, 100);
         question.setBounds(10, 5, 350, 100);
-        ;
 
         options = new JRadioButton[4];
         optionGroup = new ButtonGroup();
         for (
 
                 int index = 0; index < options.length; index++) {
-            options[index] = new JRadioButton("Option " + (index + 1)); // represents an
-            // option
-            // if a radio button is clicked, the event would be thrown to this class to
-            // handle
+            options[index] = new JRadioButton("Option " + (index + 1));
             options[index].addActionListener(this);
             options[index].setBounds(10, 110 + (index * 20), 350, 20);
             options[index].setEnabled(false);
@@ -68,18 +62,18 @@ public class ClientWindow implements ActionListener {
         t.schedule(clock, 0, 1000); // clock is called every second
         window.add(timer);
 
-        score = new JLabel("SCORE"); // represents the score
+        score = new JLabel("SCORE");
         score.setBounds(50, 250, 100, 20);
         window.add(score);
 
-        poll = new JButton("Poll"); // button that use clicks/ like a buzzer
+        poll = new JButton("Poll");
         poll.setBounds(10, 300, 100, 20);
-        poll.addActionListener(this); // calls actionPerformed of this class
+        poll.addActionListener(this);
         window.add(poll);
 
-        submit = new JButton("Submit"); // button to submit their answer
+        submit = new JButton("Submit");
         submit.setBounds(200, 300, 100, 20);
-        submit.addActionListener(this); // calls actionPerformed of this class
+        submit.addActionListener(this);
         submit.setEnabled(canAnswer);
         window.add(submit);
 
@@ -149,9 +143,8 @@ public class ClientWindow implements ActionListener {
             if (duration < 0) {
                 timer.setText("Timer expired");
                 window.repaint();
-                this.cancel(); // cancel the timed task
+                this.cancel();
                 return;
-                // you can enable/disable your buttons for poll/submit here as needed
             }
 
             if (duration < 6)
@@ -194,7 +187,7 @@ public class ClientWindow implements ActionListener {
                     option.setEnabled(canAnswer);
                 }
                 optionGroup.clearSelection();
-                msg.setText("Good Job! +10");
+                msg.setText("Good job! +10");
                 score.setText("SCORE: " + scoreValue);
             } else if (str.startsWith("wrong")) {
                 String scoreValue = str.substring("wrong ".length()).trim();
@@ -211,7 +204,7 @@ public class ClientWindow implements ActionListener {
                 score.setText("SCORE: " + scoreValue);
             } else if (str.startsWith("END")) {
                 question.setForeground(Color.red);
-                question.setText("Thank You For Playing! You're Final Score is Below!");
+                question.setText("Thank you for playing! You're final score is below!");
                 poll.setEnabled(false);
             }
         }

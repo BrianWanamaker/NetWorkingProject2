@@ -79,7 +79,6 @@ public class Server {
                                     break;
                                 }
                             }
-
                             if (matchingHandler != null) {
                                 System.out.println("Sending ACK to " + address.getHostAddress());
                                 try {
@@ -88,28 +87,27 @@ public class Server {
                                     e.printStackTrace();
                                 }
                             } else {
-                                System.out.println("No matching TCP client found for " + address.getHostAddress());
+                                System.out.println("No matching client found for " + address.getHostAddress());
+                            }
+                        }
+                    } else {
+                        ClientHandler matchingHandler = null;
+                        for (ClientHandler handler : clientHandlers) {
+                            if (handler.getSocket().getInetAddress().equals(address)) {
+                                matchingHandler = handler;
+                                break;
+                            }
+                        }
+                        if (matchingHandler != null) {
+                            System.out.println("Sending NAK to " + address.getHostAddress());
+                            try {
+                                matchingHandler.send("NAK");
+                                System.out.println("Sent NAK to " + address.getHostAddress());
+                            } catch (IOException e) {
+                                e.printStackTrace();
                             }
                         } else {
-                            ClientHandler matchingHandler = null;
-                            for (ClientHandler handler : clientHandlers) {
-                                if (handler.getSocket().getInetAddress().equals(address)) {
-                                    matchingHandler = handler;
-                                    break;
-                                }
-                            }
-
-                            if (matchingHandler != null) {
-                                System.out.println("Sending NAK to " + address.getHostAddress());
-                                try {
-                                    matchingHandler.send("NAK");
-                                    System.out.println("Sent NAK to " + address.getHostAddress());
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            } else {
-                                System.out.println("No matching TCP client found for " + address.getHostAddress());
-                            }
+                            System.out.println("No matching TCP client found for " + address.getHostAddress());
                         }
                     }
                 } catch (IOException e) {
@@ -140,7 +138,6 @@ public class Server {
                 String correctAnswer = reader.nextLine();
                 triviaQuestions.add(new TriviaQuestion(question, options, correctAnswer));
             }
-
         }
         reader.close();
     }
@@ -155,7 +152,6 @@ public class Server {
             System.out.println("end of game");
             clientHandler.send("END");
         }
-
     }
 
     public static void moveAllToNextQuestion() throws IOException {
