@@ -11,7 +11,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.security.SecureRandom;
 import java.util.TimerTask;
 import java.util.Timer;
 import javax.swing.*;
@@ -29,6 +28,7 @@ public class ClientWindow implements ActionListener {
     private int serverPort = 12345;
     private static boolean canAnswer = false;
     private JFrame window;
+    private Socket socket;
 
     // write setters and getters as you need
 
@@ -52,8 +52,10 @@ public class ClientWindow implements ActionListener {
             // handle
             options[index].addActionListener(this);
             options[index].setBounds(10, 110 + (index * 20), 350, 20);
+            options[index].setEnabled(false);
             window.add(options[index]);
             optionGroup.add(options[index]);
+
         }
 
         timer = new JLabel("TIMER"); // represents the countdown shown on the window
@@ -85,9 +87,10 @@ public class ClientWindow implements ActionListener {
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setResizable(false);
 
-        try (Socket socket = new Socket(serverIP, serverPort)) {
+        try {
+            socket = new Socket(serverIP, serverPort);
             System.out.println("Connected to server.");
-            window.setTitle("my title");
+            window.setTitle("Connected to Trivia Server");
             readFromSocket(socket);
 
         } catch (IOException e) {
@@ -124,10 +127,19 @@ public class ClientWindow implements ActionListener {
                     ex.printStackTrace();
                 }
                 break;
-            case "Submit": // Your code here
+            case "Submit":
+                String selectedAnswer = null;
+                for (int i = 0; i < options.length; i++) {
+                    if (options[i].isSelected()) {
+                        selectedAnswer = options[i].getText();
+                        break;
+                    }
+                }
+                if (selectedAnswer != null) {
+                    System.out.println("Selected Answer: " + selectedAnswer);
+                    sendAnswer(selectedAnswer);
+                }
                 break;
-            default:
-                System.out.println("Incorrect Option");
         }
 
     }
@@ -175,6 +187,15 @@ public class ClientWindow implements ActionListener {
                 System.out.println("ACK");
                 canAnswer = true;
                 submit.setEnabled(canAnswer);
+                for (JRadioButton option : options) {
+                    option.setEnabled(canAnswer);
+                }
+            } else if (str.startsWith("correct")) {
+                String scoreValue = str.substring("correct ".length()).trim();
+                score.setText("SCORE: " + scoreValue);
+            } else if (str.startsWith("wrong")) {
+                String scoreValue = str.substring("wrong ".length()).trim();
+                score.setText("SCORE: " + scoreValue);
             }
         }
         reader.close();
@@ -197,4 +218,14 @@ public class ClientWindow implements ActionListener {
             this.options[i].setText(optionsArray[i].trim());
         }
     }
+
+    private void sendAnswer(String answer) {
+        try {
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            out.println(answer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

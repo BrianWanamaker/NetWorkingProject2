@@ -34,6 +34,7 @@ public class Server {
                 new Thread(() -> {
                     try {
                         sendCurrentQuestionToClients(clientHandler);
+                        clientHandler.listenForMessages();
                     } catch (IOException e) {
                         System.out.println("An error occurred with a client connection.");
                         e.printStackTrace();
@@ -82,9 +83,8 @@ public class Server {
                             if (matchingHandler != null) {
                                 System.out.println("Sending ACK to " + address.getHostAddress());
                                 try {
-                                    sendACK(matchingHandler); // Use the matching handler to send ACK
+                                    matchingHandler.send("ACK");
                                 } catch (IOException e) {
-                                    System.out.println("Failed to send ACK to " + address.getHostAddress());
                                     e.printStackTrace();
                                 }
                             } else {
@@ -93,7 +93,6 @@ public class Server {
                         }
                     }
                 } catch (IOException e) {
-                    System.out.println("IOException in UDPThread: " + e.getMessage());
                     e.printStackTrace();
                 }
             }
@@ -127,12 +126,11 @@ public class Server {
     }
 
     private static void sendCurrentQuestionToClients(ClientHandler clientHandler) throws IOException {
-        String questionData = "Q" + triviaQuestions.get(currentQuestionIndex).toString();
+        messageQueue.clear();
+        TriviaQuestion currentQuestion = triviaQuestions.get(currentQuestionIndex);
+        String questionData = "Q" + currentQuestion.toString();
         clientHandler.send(questionData);
-    }
-
-    private static void sendACK(ClientHandler clientHandler) throws IOException {
-        clientHandler.send("ACK");
+        clientHandler.setCorrectAnswer(currentQuestion.getCorrectAnswer());
     }
 
 }
