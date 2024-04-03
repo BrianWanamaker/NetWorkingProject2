@@ -167,4 +167,9 @@ public class Server {
         }
     }
 
+    public static synchronized void removeClient(ClientHandler clientHandler) {
+        clientHandlers.remove(clientHandler);
+        System.out.println("Client removed: " + clientHandler.getSocket().getRemoteSocketAddress());
+    }
+
 }

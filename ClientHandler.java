@@ -39,7 +39,13 @@ public class ClientHandler {
             }
         } catch (IOException e) {
             System.out.println("Error listening for messages from the client.");
-            e.printStackTrace();
+            try {
+                System.out.println("Client disconnected: " + socket.getRemoteSocketAddress());
+                Server.removeClient(this);
+                close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         }
     }
 
