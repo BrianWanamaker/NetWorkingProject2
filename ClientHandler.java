@@ -57,7 +57,12 @@ public class ClientHandler {
             }
         } else {
             System.out.println("Client answered incorrectly.");
-            score -= 10;
+            if (score - 10 < 0) {
+                score = 0;
+            } else {
+                score -= 10;
+            }
+
             try {
                 send("wrong " + score);
             } catch (IOException e) {
