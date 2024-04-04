@@ -86,6 +86,7 @@ public class Server {
                                 try {
                                     matchingHandler.send("ACK");
                                     startClientTimer("10", matchingHandler);
+                                    matchingHandler.setCanAnswer(true);
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
@@ -107,7 +108,7 @@ public class Server {
                                 matchingHandler.send("NAK");
                                 System.out.println("Sent NAK to " + address.getHostAddress());
                             } catch (IOException e) {
-                                e.printStackTrace();
+                                System.out.println(matchingHandler.getSocket() + "has closed");
                             }
                         } else {
                             System.out.println("No matching TCP client found for " + address.getHostAddress());
@@ -151,16 +152,27 @@ public class Server {
             startClientTimer("15", ClientThread);
             TriviaQuestion currentQuestion = triviaQuestions.get(currentQuestionIndex);
             String questionData = "Q" + currentQuestion.toString();
-            ClientThread.send(questionData);
+            try {
+                ClientThread.send(questionData);
+            } catch (Exception e) {
+                System.out.println(ClientThread.getSocket() + "has closed");
+            }
+
             ClientThread.setCorrectAnswer(currentQuestion.getCorrectAnswer());
         } else {
             System.out.println("end of game");
             printWinners();
-            ClientThread.send("END");
+            try {
+                ClientThread.send("END");
+            } catch (Exception e) {
+                System.out.println(ClientThread.getSocket() + "has closed");
+            }
+
         }
     }
 
     public static void moveAllToNextQuestion() throws IOException {
+        numClientsOutOfTime = 0;
         startAllClientsTimers("15");
         receivingPoll = true;
         messageQueue.clear();
@@ -169,6 +181,7 @@ public class Server {
 
         for (ClientThread ClientThread : safeList) {
             sendCurrentQuestionToClient(ClientThread);
+            ClientThread.setCanAnswer(false);
         }
     }
 
@@ -178,16 +191,28 @@ public class Server {
 
     public static void startAllClientsTimers(String time) throws IOException {
         for (ClientThread ClientThread : ClientThreads) {
-            ClientThread.send("Time " + time);
+            try {
+                ClientThread.send("Time " + time);
+            } catch (Exception e) {
+                System.out.println(ClientThread.getSocket() + "has closed");
+            }
+
         }
     }
 
-    public static void startClientTimer(String time, ClientThread client) throws IOException {
-        client.send("Time " + time);
+    public static void startClientTimer(String time, ClientThread ClientThread) throws IOException {
+        try {
+            ClientThread.send("Time " + time);
+        } catch (Exception e) {
+            System.out.println(ClientThread.getSocket() + "has closed");
+        }
+
     }
 
     public static synchronized void clientOutOfTime(ClientThread ClientThread) {
         numClientsOutOfTime++;
+        System.out.println("numClientsOutOfTime: " + numClientsOutOfTime);
+        System.out.println("ClientThreads.size(): " + ClientThreads.size());
         if (numClientsOutOfTime >= ClientThreads.size()) {
             System.out.println("All Clients out of time");
             numClientsOutOfTime = 0;
@@ -195,7 +220,12 @@ public class Server {
                 if (currentQuestionIndex < triviaQuestions.size()) {
                     moveAllToNextQuestion();
                 } else {
-                    ClientThread.send("END");
+                    try {
+                        ClientThread.send("END");
+                    } catch (Exception e) {
+                        System.out.println(ClientThread.getSocket() + "has closed");
+                    }
+
                 }
             } catch (IOException e) {
                 e.printStackTrace();

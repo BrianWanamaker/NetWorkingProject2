@@ -10,12 +10,14 @@ public class ClientThread implements Comparable<ClientThread> {
     private BufferedReader reader;
     private String correctAnswer;
     private int score;
+    private boolean canAnswer;
 
     public ClientThread(Socket socket) throws IOException {
         this.socket = socket;
         this.dos = new DataOutputStream(socket.getOutputStream());
         this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         score = 0;
+        canAnswer = false;
         send("score " + score);
     }
 
@@ -55,7 +57,11 @@ public class ClientThread implements Comparable<ClientThread> {
         } catch (IOException e) {
             try {
                 System.out.println("Client disconnected: " + socket.getRemoteSocketAddress());
+                System.out.println("Can Answer: " + canAnswer);
                 Server.removeClient(this);
+                if (canAnswer) {
+                    Server.moveAllToNextQuestion();
+                }
                 close();
             } catch (IOException e1) {
                 e1.printStackTrace();
@@ -94,6 +100,14 @@ public class ClientThread implements Comparable<ClientThread> {
     @Override
     public int compareTo(ClientThread other) {
         return Integer.compare(other.score, this.score);
+    }
+
+    public boolean getCanAnswer() {
+        return canAnswer;
+    }
+
+    public void setCanAnswer(boolean canAnswer) {
+        this.canAnswer = canAnswer;
     }
 
     public int getScore() {
