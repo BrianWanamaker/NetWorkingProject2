@@ -57,7 +57,6 @@ public class ClientThread implements Comparable<ClientThread> {
         } catch (IOException e) {
             try {
                 System.out.println("Client disconnected: " + socket.getRemoteSocketAddress());
-                System.out.println("Can Answer: " + canAnswer);
                 Server.removeClient(this);
                 if (canAnswer) {
                     Server.moveAllToNextQuestion();

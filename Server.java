@@ -1,6 +1,5 @@
 import java.io.*;
 import java.net.*;
-import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -12,6 +11,7 @@ public class Server {
     private static boolean receivingPoll = true;
     private static List<ClientThread> ClientThreads = new ArrayList<>();
     public static int numClientsOutOfTime = 0;
+    private static boolean hasPrintedWinners = false;
 
     public static void main(String[] args) {
         triviaQuestions = new ArrayList<>();
@@ -161,7 +161,11 @@ public class Server {
             ClientThread.setCorrectAnswer(currentQuestion.getCorrectAnswer());
         } else {
             System.out.println("end of game");
-            printWinners();
+            if (!hasPrintedWinners) {
+                printWinners();
+                hasPrintedWinners = true;
+            }
+
             try {
                 ClientThread.send("END");
             } catch (Exception e) {
@@ -211,8 +215,7 @@ public class Server {
 
     public static synchronized void clientOutOfTime(ClientThread ClientThread) {
         numClientsOutOfTime++;
-        System.out.println("numClientsOutOfTime: " + numClientsOutOfTime);
-        System.out.println("ClientThreads.size(): " + ClientThreads.size());
+
         if (numClientsOutOfTime >= ClientThreads.size()) {
             System.out.println("All Clients out of time");
             numClientsOutOfTime = 0;
