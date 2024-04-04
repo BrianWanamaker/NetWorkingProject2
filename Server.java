@@ -8,7 +8,7 @@ public class Server {
     private static final int portNumber = 12345;
     private static ConcurrentLinkedQueue<String> messageQueue = new ConcurrentLinkedQueue<>();
     private static List<TriviaQuestion> triviaQuestions;
-    private static int currentQuestionIndex = 18;
+    private static int currentQuestionIndex = 17;
     private static boolean receivingPoll = true;
     private static List<ClientThread> ClientThreads = new ArrayList<>();
     public static int numClientsOutOfTime = 0;
@@ -165,8 +165,9 @@ public class Server {
         receivingPoll = true;
         messageQueue.clear();
         currentQuestionIndex++;
+        List<ClientThread> safeList = new ArrayList<>(ClientThreads);
 
-        for (ClientThread ClientThread : ClientThreads) {
+        for (ClientThread ClientThread : safeList) {
             sendCurrentQuestionToClient(ClientThread);
         }
     }
@@ -191,7 +192,11 @@ public class Server {
             System.out.println("All Clients out of time");
             numClientsOutOfTime = 0;
             try {
-                moveAllToNextQuestion();
+                if (currentQuestionIndex < triviaQuestions.size()) {
+                    moveAllToNextQuestion();
+                } else {
+                    ClientThread.send("END");
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }

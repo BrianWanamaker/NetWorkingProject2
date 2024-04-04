@@ -93,7 +93,7 @@ public class ClientThread implements Comparable<ClientThread> {
 
     @Override
     public int compareTo(ClientThread other) {
-        return Integer.compare(this.score, other.score);
+        return Integer.compare(other.score, this.score);
     }
 
     public int getScore() {
