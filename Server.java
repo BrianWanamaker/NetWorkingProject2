@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -34,7 +35,7 @@ public class Server {
 
                 new Thread(() -> {
                     try {
-                        sendCurrentQuestionToClients(clientHandler);
+                        sendCurrentQuestionToClient(clientHandler);
                         clientHandler.listenForMessages();
                     } catch (IOException e) {
                         System.out.println("An error occurred with a client connection.");
@@ -144,8 +145,8 @@ public class Server {
         reader.close();
     }
 
-    private static void sendCurrentQuestionToClients(ClientHandler clientHandler) throws IOException {
-        startAllClientsTimers("15");
+    private static void sendCurrentQuestionToClient(ClientHandler clientHandler) throws IOException {
+        startClientTimer("15", clientHandler);
         if (currentQuestionIndex < triviaQuestions.size()) {
             TriviaQuestion currentQuestion = triviaQuestions.get(currentQuestionIndex);
             String questionData = "Q" + currentQuestion.toString();
@@ -158,12 +159,13 @@ public class Server {
     }
 
     public static void moveAllToNextQuestion() throws IOException {
+        startAllClientsTimers("15");
         receivingPoll = true;
         messageQueue.clear();
         currentQuestionIndex++;
 
         for (ClientHandler clientHandler : clientHandlers) {
-            sendCurrentQuestionToClients(clientHandler);
+            sendCurrentQuestionToClient(clientHandler);
         }
     }
 
@@ -172,7 +174,6 @@ public class Server {
     }
 
     public static void startAllClientsTimers(String time) throws IOException {
-
         for (ClientHandler clientHandler : clientHandlers) {
             clientHandler.send("Time " + time);
         }
@@ -184,8 +185,8 @@ public class Server {
 
     public static synchronized void ClientOutOfTime(ClientHandler clientHandler) {
         numClientsOutOfTime++;
-        System.out.println("All Clients out of time");
         if (numClientsOutOfTime >= clientHandlers.size()) {
+            System.out.println("All Clients out of time");
             numClientsOutOfTime = 0;
             try {
                 moveAllToNextQuestion();
