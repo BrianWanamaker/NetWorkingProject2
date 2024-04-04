@@ -4,14 +4,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 
-public class ClientHandler {
+public class ClientThread implements Comparable<ClientThread> {
     private Socket socket;
     private DataOutputStream dos;
     private BufferedReader reader;
     private String correctAnswer;
     private int score;
 
-    public ClientHandler(Socket socket) throws IOException {
+    public ClientThread(Socket socket) throws IOException {
         this.socket = socket;
         this.dos = new DataOutputStream(socket.getOutputStream());
         this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -32,6 +32,10 @@ public class ClientHandler {
         return this.socket;
     }
 
+    public String getClientId() {
+        return socket.getRemoteSocketAddress().toString();
+    }
+
     public void listenForMessages() {
         try {
             String message;
@@ -43,7 +47,7 @@ public class ClientHandler {
                     System.out.println("Client did not answer in time");
                     Server.moveAllToNextQuestion();
                 } else if (message.startsWith("Expired")) {
-                    Server.ClientOutOfTime(this);
+                    Server.clientOutOfTime(this);
                 } else {
                     checkAnswer(message);
                 }
@@ -85,6 +89,15 @@ public class ClientHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public int compareTo(ClientThread other) {
+        return Integer.compare(this.score, other.score);
+    }
+
+    public int getScore() {
+        return score;
     }
 
     public void close() throws IOException {

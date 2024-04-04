@@ -95,8 +95,6 @@ public class ClientWindow implements ActionListener {
         }
     }
 
-    // this method is called when you check/uncheck any radio button
-    // this method is called when you press either of the buttons- submit/poll
     @Override
     public void actionPerformed(ActionEvent e) {
         String input = e.getActionCommand();
@@ -109,7 +107,6 @@ public class ClientWindow implements ActionListener {
                         DatagramPacket packet = new DatagramPacket(buf, buf.length, address, serverPort);
                         DatagramSocket socket = new DatagramSocket();
                         socket.send(packet);
-                        // msg.setText("");
                     }
                 } catch (IOException ex) {
                     ex.printStackTrace();
@@ -148,6 +145,7 @@ public class ClientWindow implements ActionListener {
                 window.repaint();
                 this.cancel();
                 submit.setEnabled(false);
+                poll.setEnabled(false);
                 for (JRadioButton option : options) {
                     option.setEnabled(false);
                 }
@@ -158,6 +156,7 @@ public class ClientWindow implements ActionListener {
                 } else {
                     sendAnswer("Expired");
                     msg.setText("Out of time!");
+                    clock.cancel();
                 }
                 canAnswer = false;
                 return;
@@ -225,6 +224,7 @@ public class ClientWindow implements ActionListener {
                 question.setText("Thank you for playing! You're final score is below!");
                 poll.setEnabled(false);
                 msg.setText("");
+                clock.cancel();
             } else if (str.startsWith("Time")) {
                 int time = Integer.parseInt(str.substring("Time ".length()).trim());
                 resetTimer(time);

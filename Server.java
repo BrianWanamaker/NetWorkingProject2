@@ -8,9 +8,9 @@ public class Server {
     private static final int portNumber = 12345;
     private static ConcurrentLinkedQueue<String> messageQueue = new ConcurrentLinkedQueue<>();
     private static List<TriviaQuestion> triviaQuestions;
-    private static int currentQuestionIndex = 0;
+    private static int currentQuestionIndex = 18;
     private static boolean receivingPoll = true;
-    private static List<ClientHandler> clientHandlers = new ArrayList<>();
+    private static List<ClientThread> ClientThreads = new ArrayList<>();
     public static int numClientsOutOfTime = 0;
 
     public static void main(String[] args) {
@@ -29,14 +29,14 @@ public class Server {
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                ClientHandler clientHandler = new ClientHandler(clientSocket);
-                clientHandlers.add(clientHandler);
+                ClientThread ClientThread = new ClientThread(clientSocket);
+                ClientThreads.add(ClientThread);
                 System.out.println("Client connected: " + clientSocket.getRemoteSocketAddress().toString());
 
                 new Thread(() -> {
                     try {
-                        sendCurrentQuestionToClient(clientHandler);
-                        clientHandler.listenForMessages();
+                        sendCurrentQuestionToClient(ClientThread);
+                        ClientThread.listenForMessages();
                     } catch (IOException e) {
                         System.out.println("An error occurred with a client connection.");
                         e.printStackTrace();
@@ -74,8 +74,8 @@ public class Server {
                     if (receivingPoll) {
                         receivingPoll = false;
                         if (messageQueue.size() == 0) {
-                            ClientHandler matchingHandler = null;
-                            for (ClientHandler handler : clientHandlers) {
+                            ClientThread matchingHandler = null;
+                            for (ClientThread handler : ClientThreads) {
                                 if (handler.getSocket().getInetAddress().equals(address)) {
                                     matchingHandler = handler;
                                     break;
@@ -94,8 +94,8 @@ public class Server {
                             }
                         }
                     } else {
-                        ClientHandler matchingHandler = null;
-                        for (ClientHandler handler : clientHandlers) {
+                        ClientThread matchingHandler = null;
+                        for (ClientThread handler : ClientThreads) {
                             if (handler.getSocket().getInetAddress().equals(address)) {
                                 matchingHandler = handler;
                                 break;
@@ -145,16 +145,18 @@ public class Server {
         reader.close();
     }
 
-    private static void sendCurrentQuestionToClient(ClientHandler clientHandler) throws IOException {
-        startClientTimer("15", clientHandler);
+    private static void sendCurrentQuestionToClient(ClientThread ClientThread) throws IOException {
+
         if (currentQuestionIndex < triviaQuestions.size()) {
+            startClientTimer("15", ClientThread);
             TriviaQuestion currentQuestion = triviaQuestions.get(currentQuestionIndex);
             String questionData = "Q" + currentQuestion.toString();
-            clientHandler.send(questionData);
-            clientHandler.setCorrectAnswer(currentQuestion.getCorrectAnswer());
+            ClientThread.send(questionData);
+            ClientThread.setCorrectAnswer(currentQuestion.getCorrectAnswer());
         } else {
             System.out.println("end of game");
-            clientHandler.send("END");
+            printWinners();
+            ClientThread.send("END");
         }
     }
 
@@ -164,28 +166,28 @@ public class Server {
         messageQueue.clear();
         currentQuestionIndex++;
 
-        for (ClientHandler clientHandler : clientHandlers) {
-            sendCurrentQuestionToClient(clientHandler);
+        for (ClientThread ClientThread : ClientThreads) {
+            sendCurrentQuestionToClient(ClientThread);
         }
     }
 
-    public static synchronized void removeClient(ClientHandler clientHandler) {
-        clientHandlers.remove(clientHandler);
+    public static synchronized void removeClient(ClientThread ClientThread) {
+        ClientThreads.remove(ClientThread);
     }
 
     public static void startAllClientsTimers(String time) throws IOException {
-        for (ClientHandler clientHandler : clientHandlers) {
-            clientHandler.send("Time " + time);
+        for (ClientThread ClientThread : ClientThreads) {
+            ClientThread.send("Time " + time);
         }
     }
 
-    public static void startClientTimer(String time, ClientHandler client) throws IOException {
+    public static void startClientTimer(String time, ClientThread client) throws IOException {
         client.send("Time " + time);
     }
 
-    public static synchronized void ClientOutOfTime(ClientHandler clientHandler) {
+    public static synchronized void clientOutOfTime(ClientThread ClientThread) {
         numClientsOutOfTime++;
-        if (numClientsOutOfTime >= clientHandlers.size()) {
+        if (numClientsOutOfTime >= ClientThreads.size()) {
             System.out.println("All Clients out of time");
             numClientsOutOfTime = 0;
             try {
@@ -193,7 +195,21 @@ public class Server {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
 
+    public static void printWinners() {
+        if (ClientThreads.isEmpty()) {
+            System.out.println("No participants in the game.");
+            return;
+        }
+        Collections.sort(ClientThreads);
+        System.out.println("Winner:");
+        System.out.println(ClientThreads.get(0).getClientId() + " with a score of " + ClientThreads.get(0).getScore());
+
+        System.out.println("Final Scores:");
+        for (ClientThread client : ClientThreads) {
+            System.out.println(client.getClientId() + ": " + client.getScore());
         }
     }
 
