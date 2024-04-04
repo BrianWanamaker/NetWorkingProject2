@@ -8,7 +8,7 @@ public class Server {
     private static final int portNumber = 12345;
     private static ConcurrentLinkedQueue<String> messageQueue = new ConcurrentLinkedQueue<>();
     private static List<TriviaQuestion> triviaQuestions;
-    private static int currentQuestionIndex = 17;
+    private static int currentQuestionIndex = 0;
     private static boolean receivingPoll = true;
     private static List<ClientThread> ClientThreads = new ArrayList<>();
     public static int numClientsOutOfTime = 0;
