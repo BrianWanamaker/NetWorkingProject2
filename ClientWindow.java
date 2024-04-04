@@ -12,6 +12,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.TimerTask;
+import java.util.Scanner;
 import java.util.Timer;
 import javax.swing.*;
 
@@ -32,6 +33,9 @@ public class ClientWindow implements ActionListener {
     private Socket socket;
 
     public ClientWindow() {
+        Scanner in = new Scanner(System.in);
+        System.out.println("Enter sever IP adress: ");
+        serverIP = in.nextLine();
 
         window = new JFrame("Trivia");
 

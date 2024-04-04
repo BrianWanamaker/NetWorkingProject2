@@ -171,7 +171,6 @@ public class Server {
             } catch (Exception e) {
                 System.out.println(ClientThread.getSocket() + "has closed");
             }
-
         }
     }
 
