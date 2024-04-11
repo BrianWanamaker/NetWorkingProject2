@@ -13,6 +13,9 @@ public class Server {
     public static int numClientsOutOfTime = 0;
     private static boolean hasPrintedWinners = false;
 
+    // Ip adress = ...
+    // Cd into file -> java -jar "NetWorking Project 2.jar"
+
     public static void main(String[] args) {
         triviaQuestions = new ArrayList<>();
         try {

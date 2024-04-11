@@ -95,7 +95,13 @@ public class ClientWindow implements ActionListener {
             readFromSocket(socket);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Server closed this socket.");
+            msg.setForeground(Color.red);
+            msg.setText("Server closed the connection :(");
+            canAnswer = false;
+            poll.setEnabled(canAnswer);
+            submit.setEnabled(canAnswer);
+            clock.cancel();
         }
     }
 
@@ -193,6 +199,7 @@ public class ClientWindow implements ActionListener {
 
                 canAnswer = true;
                 submit.setEnabled(canAnswer);
+                poll.setEnabled(false);
                 for (JRadioButton option : options) {
                     option.setEnabled(canAnswer);
                 }
@@ -204,6 +211,7 @@ public class ClientWindow implements ActionListener {
                 String scoreValue = str.substring("correct ".length()).trim();
                 canAnswer = false;
                 submit.setEnabled(canAnswer);
+                poll.setEnabled(true);
                 for (JRadioButton option : options) {
                     option.setEnabled(canAnswer);
                 }
@@ -214,6 +222,7 @@ public class ClientWindow implements ActionListener {
                 String scoreValue = str.substring("wrong ".length()).trim();
                 canAnswer = false;
                 submit.setEnabled(canAnswer);
+                poll.setEnabled(true);
                 for (JRadioButton option : options) {
                     option.setEnabled(canAnswer);
                 }
